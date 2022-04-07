@@ -1,0 +1,14 @@
+{
+  "database" : {
+    "host": "localhost",
+    "port" : 5342,
+    "username" : "gada",
+    "password": "gada"
+  },
+  "get_stream": {
+    "secret" : ""
+  },
+  "external_service": {
+    "gada_marketplace" : ""
+   }
+}

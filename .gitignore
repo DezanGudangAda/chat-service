@@ -323,3 +323,5 @@ fabric.properties
 
 # Temp Folder
 tmp
+
+config.json
