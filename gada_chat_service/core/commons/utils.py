@@ -1,6 +1,11 @@
 from datetime import date, datetime, time, timedelta
-from typing import Optional
+from decimal import Decimal
+from enum import Enum
+from typing import Optional, List, Any, Dict, TypeVar
 import pytz
+import dataclasses
+
+import uuid
 
 from gada_chat_service.core.commons.constant import JAKARTA_UTC_OFFSET_HOURS
 
@@ -15,7 +20,7 @@ class DatetimeUtil:
 
     @staticmethod
     def convert_naive_datetime_to_jakarta_time(
-        value: Optional[datetime],
+            value: Optional[datetime],
     ) -> Optional[datetime]:
         """
         Return naive datetime in jakarta time.
@@ -30,5 +35,64 @@ class DatetimeUtil:
             return value + timedelta(hours=JAKARTA_UTC_OFFSET_HOURS)
 
         return (
-            value.astimezone(pytz.utc) + timedelta(hours=JAKARTA_UTC_OFFSET_HOURS)
+                value.astimezone(pytz.utc) + timedelta(hours=JAKARTA_UTC_OFFSET_HOURS)
         ).replace(tzinfo=None)
+
+
+class DictionaryUtil:
+    @staticmethod
+    def transform_into_jsonable_dictionary(
+            data_object: Dict[str, Any],
+            datetime_format: Optional[str] = None,
+            is_datetime_in_jakarta_time: bool = True,
+    ) -> Optional[Dict[str, Any]]:
+        if not isinstance(data_object, Dict):
+            return None
+
+        T = TypeVar("T")
+
+        def transform_data(data: T) -> T:
+            if isinstance(data, Enum):
+                data = data.value
+            elif isinstance(data, Decimal):
+                data = float(data)
+            elif isinstance(data, uuid.UUID):
+                data = str(data)
+            elif isinstance(data, datetime):
+                if datetime_format:
+                    data = data.strftime(datetime_format)
+                else:
+                    data = data.astimezone().isoformat()
+            elif isinstance(data, time):
+                data = data.isoformat()
+            elif isinstance(data, date):
+                data = data.isoformat()
+            elif isinstance(data, List):
+                for index in range(len(data)):
+                    data[index] = transform_data(data[index])
+            elif isinstance(data, Dict):
+                for key in data:
+                    data[key] = transform_data(data[key])
+            elif dataclasses.is_dataclass(data):
+                data = transform_data(dataclasses.asdict(data))
+
+            return data
+
+        return transform_data(data_object)
+
+    @staticmethod
+    def transform_into_jsonable_array(
+            data_array: List[Any], datetime_format: Optional[str] = None
+    ) -> Optional[List[Any]]:
+        results = []
+        for data_object in data_array:
+            if dataclasses.is_dataclass(data_object):
+                data_object = dataclasses.asdict(data_object)
+
+            results.append(
+                DictionaryUtil.transform_into_jsonable_dictionary(
+                    data_object, datetime_format
+                )
+            )
+
+        return results

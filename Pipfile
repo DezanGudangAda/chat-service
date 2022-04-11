@@ -8,6 +8,10 @@ sqlalchemy = "*"
 alembic = "*"
 psycopg2 = "*"
 pytz = "*"
+install = "*"
+stream-chat = "*"
+uuid = "*"
+injector = "*"
 
 [dev-packages]
 
