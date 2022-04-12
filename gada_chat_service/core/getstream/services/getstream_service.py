@@ -1,13 +1,11 @@
-import json
-from typing import Optional, List
+from typing import Optional
 
 from stream_chat import StreamChat
 from stream_chat.channel import Channel
 
 from gada_chat_service.core.commons.utils import DictionaryUtil
-from gada_chat_service.core.getstream.constant import ContextType
 from gada_chat_service.core.getstream.specs import GenerateUserTokenSpec, GenerateUserTokenResult, CreateChannelSpec, \
-    CreateChannelResult, ChatSpec, ChatExternalDataSpec, ProductAttachmentSpec, OrderAttachmentSpec, ChatMetaSpec
+    CreateChannelResult, ChatSpec
 
 
 class GetStreamService:
@@ -28,7 +26,8 @@ class GetStreamService:
 
     def create_channel(self, spec: CreateChannelSpec) -> Optional[CreateChannelResult]:
         channel = Channel(self.stream, "messaging", None,
-                          custom_data=dict(members=[spec.seller_getstream_id, spec.buyer_getstream_id], created_by_id="4645"))
+                          custom_data=dict(members=[spec.seller_getstream_id, spec.buyer_getstream_id],
+                                           created_by_id="4645"))
         channel.query()
 
         return CreateChannelResult(
@@ -44,9 +43,19 @@ class GetStreamService:
         return message
 
     def _external_data_to_json(self, spec: ChatSpec) -> dict:
+        meta = {
+            "sender": spec.chat_meta.sender,
+            "getstream_id": spec.chat_meta.getstream_id,
+            "need_reply": spec.chat_meta.need_reply,
+            "channel_id": spec.chat_meta.channel_id,
+        }
+
+        if spec.chat_meta.reply_option is not None:
+            meta["reply_option"] = DictionaryUtil.transform_into_jsonable_array(spec.chat_meta.reply_option),
+
         data = {
             "product_attachment": DictionaryUtil.transform_into_jsonable_array(spec.product_attachment),
-            "chat_meta": spec.chat_meta,
+            "chat_meta": meta,
             "order_attachment": spec.order_attachment
         }
 
@@ -56,4 +65,4 @@ class GetStreamService:
         chat = self.stream.channel("messaging", spec.chat_meta.channel_id)
 
         message = self._generate_message(spec)
-        return chat.send_message(message, spec.chat_meta.channel_id)
+        return chat.send_message(message, spec.chat_meta.getstream_id)

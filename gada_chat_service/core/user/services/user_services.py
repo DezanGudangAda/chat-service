@@ -64,7 +64,8 @@ class UserService:
                     is_available=True,
                     current_stock=100,
                     price="Rp 25,000",
-                    name="Product #" + str(ids)
+                    name="Product #" + str(ids),
+                    id=ids
                 )
 
                 product_attachments.append(product)

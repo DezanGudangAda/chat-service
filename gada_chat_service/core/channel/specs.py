@@ -5,14 +5,14 @@ from gada_chat_service.core.getstream.constant import UserType
 
 @dataclass
 class InsertChannelSpec:
-    buyer_username: str
-    seller_username: str
+    buyer_getstream_id: str
+    seller_getstream_id: str
     channel_id: str
     channel_name: str
 
 
 @dataclass
 class GetChannelByUsersSpec:
-    buyer_username: str
-    seller_username: str
+    buyer_getstream_id: str
+    seller_getstream_id: str
 

@@ -1,9 +1,10 @@
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from enum import Enum
-from typing import Optional, List, Any, Dict, TypeVar
+from typing import Optional, List, Any, Dict, TypeVar, Type
 import pytz
 import dataclasses
+from dataclasses import fields
 
 import uuid
 
@@ -96,3 +97,25 @@ class DictionaryUtil:
             )
 
         return results
+
+
+class ObjectMapperUtil:
+    T = TypeVar("T")
+
+    @staticmethod
+    def map(source_model_object, destination_domain_class: Type[T]) -> T:
+        """
+        This method will not raise error if the source object does not have attribute(s)
+        required by the destination domain class.
+        """
+        domain_fields = [field.name for field in fields(destination_domain_class)]
+        if issubclass(type(source_model_object), dict):
+            attributes = {
+                field: source_model_object.get(field) for field in domain_fields
+            }
+        else:
+            attributes = {
+                field: getattr(source_model_object, field, None)
+                for field in domain_fields
+            }
+        return destination_domain_class(**attributes)

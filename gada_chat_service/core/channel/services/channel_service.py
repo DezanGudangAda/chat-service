@@ -25,15 +25,15 @@ class ChannelService:
             return channel
 
         create_channel = self.stream_service.create_channel(CreateChannelSpec(
-            seller_username=spec.seller_username,
-            buyer_username=spec.buyer_username,
+            seller_getstream_id=spec.seller_getstream_id,
+            buyer_getstream_id=spec.buyer_getstream_id,
         ))
 
         new_channel = self.channel_accessor.create_channel(InsertChannelSpec(
             channel_id=create_channel.channel_id,
-            channel_name=f"{spec.seller_username}{spec.buyer_username}",
-            seller_username=spec.seller_username,
-            buyer_username=spec.buyer_username,
+            channel_name=f"{spec.seller_getstream_id}-{spec.buyer_getstream_id}",
+            seller_getstream_id=spec.seller_getstream_id,
+            buyer_getstream_id=spec.buyer_getstream_id,
         ))
 
         return new_channel
