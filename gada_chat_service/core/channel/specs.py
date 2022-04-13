@@ -12,7 +12,18 @@ class InsertChannelSpec:
 
 
 @dataclass
-class GetChannelByUsersSpec:
+class CreateChannelSpec:
+    buyer_getstream_id: str
+    seller_username: str
+
+
+@dataclass
+class GetChannelSpec:
+    getstream_id: str
+    target_username: str
+
+
+@dataclass
+class GetChannelDbSpec:
     buyer_getstream_id: str
     seller_getstream_id: str
-

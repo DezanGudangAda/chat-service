@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from gada_chat_service.chat_service.channel.models import Channel
 from gada_chat_service.core.channel.accessors.channel_accessor import IChannelAccessor
 from gada_chat_service.core.channel.models import ChannelDomain
-from gada_chat_service.core.channel.specs import InsertChannelSpec, GetChannelByUsersSpec
+from gada_chat_service.core.channel.specs import InsertChannelSpec, CreateChannelSpec, GetChannelDbSpec
 
 
 class ChannelAccessor(IChannelAccessor):
@@ -34,7 +34,7 @@ class ChannelAccessor(IChannelAccessor):
 
         return new_channel.to_domain()
 
-    def get_channel_by_users(self, spec: GetChannelByUsersSpec) -> Optional[ChannelDomain]:
+    def get_channel_by_users(self, spec: GetChannelDbSpec) -> Optional[ChannelDomain]:
         chan = self._query. \
             filter(Channel.seller_getstream_id == spec.seller_getstream_id,
                    Channel.buyer_getstream_id == spec.buyer_getstream_id).first()

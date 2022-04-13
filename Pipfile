@@ -12,6 +12,7 @@ install = "*"
 stream-chat = "*"
 uuid = "*"
 injector = "*"
+uvicorn = "*"
 
 [dev-packages]
 
