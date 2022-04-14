@@ -29,7 +29,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 injector = Injector(
     [
         UserModule,
@@ -90,6 +89,7 @@ async def send_message(spec: SendChatSpec):
         "data": res,
         "message": "succeed"
     }
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8300)
