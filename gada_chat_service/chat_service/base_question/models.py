@@ -10,3 +10,4 @@ class BaseQuestion(Base):
     question = Column(String)
     is_automate_reply = Column(Boolean)
     context = Column(String)
+    trigger_action = Column(String)
