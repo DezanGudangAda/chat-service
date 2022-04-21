@@ -9,3 +9,5 @@ class RelatedAnswer(Base):
 
     answer = Column(String)
     trigger_action = Column(String)
+    code = Column(String)
+

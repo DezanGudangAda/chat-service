@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 
-from gada_chat_service.core.getstream.constant import UserType
-
 
 @dataclass
 class InsertChannelSpec:

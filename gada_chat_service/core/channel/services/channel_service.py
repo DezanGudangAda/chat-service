@@ -59,6 +59,9 @@ class ChannelService:
     def get_channel(self, spec: GetChannelSpec) -> Optional[ChannelDomain]:
         check_getstream = self.user_accessor.get_user_by_getstream_id(spec.getstream_id)
 
+        if check_getstream is None:
+            raise HTTPException(status_code=404, detail="user not registered")
+
         if check_getstream.account_type == UserType.SELLER.value:
             target_user = self.user_service.get_or_create_user_and_token(GetUserTokenSpec(
                 username=spec.target_username,
@@ -69,7 +72,6 @@ class ChannelService:
                 buyer_getstream_id=spec.getstream_id,
                 seller_getstream_id=target_user.getstream_id
             ))
-            print(channel)
 
             if channel is None:
                 raise HTTPException(status_code=404, detail="Channel not found")

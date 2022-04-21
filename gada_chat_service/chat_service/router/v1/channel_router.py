@@ -3,8 +3,6 @@ from fastapi import APIRouter
 from gada_chat_service.chat_service.injector import injector
 from gada_chat_service.core.channel.services.channel_service import ChannelService
 from gada_chat_service.core.channel.specs import CreateChannelSpec, GetChannelSpec
-from gada_chat_service.core.user.services.user_services import UserService
-from gada_chat_service.core.user.specs import GetUserTokenSpec, SendChatSpec
 
 channel_service: ChannelService = injector.get(
     ChannelService

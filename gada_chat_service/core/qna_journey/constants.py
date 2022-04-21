@@ -1,0 +1,8 @@
+from enum import Enum
+
+
+class NodeType(Enum):
+    BASE_QUESTION = "BASE_QUESTION"
+    RELATED_QUESTION = "RELATED_QUESTION"
+    RELATED_ANSWER = "RELATED_ANSWER"
+
