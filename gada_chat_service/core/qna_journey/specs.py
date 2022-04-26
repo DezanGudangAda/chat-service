@@ -19,4 +19,25 @@ class GetNextNodesSpec:
 @dataclass
 class GetNextNodesResult:
     nodes: Optional[List[NodeResult]]
-    is_end_of_nodes: bool
+
+
+@dataclass
+class AppendNewNodeSpec:
+    id: int
+    before_node_code: Optional[str]
+    node_code: str
+
+
+@dataclass
+class CreateJourneySpec:
+    nodes: List[str]
+
+
+@dataclass
+class RelatedNodesResult:
+    nodes: Optional[List[str]]
+
+@dataclass
+class UpdatePathSpec:
+    new_path: str
+    journey_id: id

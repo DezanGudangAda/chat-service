@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from injector import inject
 
 from gada_chat_service.core.related_answer.accessors.related_answer_accessor import IRelatedAnswerAccessor
-from gada_chat_service.core.related_answer.constant import PREFIX_CODE
+from gada_chat_service.core.related_answer.constants import PREFIX_CODE
 from gada_chat_service.core.related_answer.specs import RelatedQuestionResult, CreateRelatedQuestionSpec, \
     InsertRelatedQuestionSpec, GetByCodeSpec
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from gada_chat_service.core.related_answer.constant import TriggerAction
+from gada_chat_service.core.related_answer.constants import TriggerAction
 
 
 @dataclass

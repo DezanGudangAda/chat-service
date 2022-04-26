@@ -1,8 +1,20 @@
 from abc import ABC, abstractmethod
+from typing import Optional
+
+from gada_chat_service.core.qna_journey.models import QnaJourneyDomain
+from gada_chat_service.core.qna_journey.specs import RelatedNodesResult, UpdatePathSpec
 
 
 class IQnaJourneyAccessor(ABC):
     @abstractmethod
-    def create(self):
+    def create(self, nodes: str) -> QnaJourneyDomain:
         raise NotImplementedError
 
+    def get_related_nodes(self, nodes: str) -> Optional[RelatedNodesResult]:
+        raise NotImplementedError
+
+    def append_node_to_journey(self, spec: UpdatePathSpec) -> Optional[QnaJourneyDomain]:
+        raise NotImplementedError
+
+    def get_by_id(self, journey_id: int) -> Optional[QnaJourneyDomain]:
+        raise NotImplementedError
