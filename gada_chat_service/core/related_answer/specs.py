@@ -5,7 +5,7 @@ from gada_chat_service.core.related_answer.constants import TriggerAction
 
 
 @dataclass
-class RelatedQuestionResult:
+class RelatedAnswerResult:
     id: int
     code: str
     answer: str
@@ -13,14 +13,14 @@ class RelatedQuestionResult:
 
 
 @dataclass
-class InsertRelatedQuestionSpec:
+class InsertRelatedAnswerSpec:
     code: str
     answer: str
     trigger_action: Optional[TriggerAction]
 
 
 @dataclass
-class CreateRelatedQuestionSpec:
+class CreateRelatedAnswerSpec:
     answer: str
     trigger_action: Optional[TriggerAction]
 
