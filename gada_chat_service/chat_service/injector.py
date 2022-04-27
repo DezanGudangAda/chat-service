@@ -5,6 +5,7 @@ from gada_chat_service.chat_service.channel.modules import ChannelModule
 from gada_chat_service.chat_service.getstream.modules import GetStreamModule
 from gada_chat_service.chat_service.migrations.modules import ConnectionModule
 from gada_chat_service.chat_service.related_answer.modules import RelatedAnswerModule
+from gada_chat_service.chat_service.related_question.modules import RelatedQuestionModule
 from gada_chat_service.chat_service.user.modules import UserModule
 
 injector = Injector(
@@ -15,5 +16,6 @@ injector = Injector(
         ChannelModule,
         BaseQuestionModule,
         RelatedAnswerModule,
+        RelatedQuestionModule,
     ]
 )
