@@ -10,11 +10,14 @@ class IQnaJourneyAccessor(ABC):
     def create(self, nodes: str) -> QnaJourneyDomain:
         raise NotImplementedError
 
+    @abstractmethod
     def get_related_nodes(self, nodes: str) -> Optional[RelatedNodesResult]:
         raise NotImplementedError
 
+    @abstractmethod
     def append_node_to_journey(self, spec: UpdatePathSpec) -> Optional[QnaJourneyDomain]:
         raise NotImplementedError
 
+    @abstractmethod
     def get_by_id(self, journey_id: int) -> Optional[QnaJourneyDomain]:
         raise NotImplementedError

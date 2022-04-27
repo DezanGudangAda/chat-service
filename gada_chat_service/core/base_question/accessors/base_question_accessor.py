@@ -11,14 +11,18 @@ class IBaseQuestionAccessor(ABC):
     def create(self, spec: InsertBaseQuestionSpec) -> BaseQuestionDomain:
         raise NotImplementedError
 
+    @abstractmethod
     def get_by_code(self, code: str) -> Optional[BaseQuestionDomain]:
         raise NotImplementedError
 
+    @abstractmethod
     def get_by_id(self, id_base: int) -> Optional[BaseQuestionDomain]:
         raise NotImplementedError
 
+    @abstractmethod
     def get_last_id(self) -> int:
         raise NotImplementedError
 
+    @abstractmethod
     def get_by_context(self, spec: BaseQuestionContext) -> Optional[List[BaseQuestionDomain]]:
         raise NotImplementedError

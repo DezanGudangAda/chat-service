@@ -3,7 +3,7 @@ from typing import Optional, List
 from fastapi import HTTPException
 from injector import inject
 
-from gada_chat_service.core.base_question.accessor.base_question_accessor import IBaseQuestionAccessor
+from gada_chat_service.core.base_question.accessors.base_question_accessor import IBaseQuestionAccessor
 from gada_chat_service.core.base_question.constants import PREFIX_CODE
 from gada_chat_service.core.base_question.specs import CreateBaseQuestionSpec, BaseQuestionResult, \
     InsertBaseQuestionSpec, GetByContextSpec
