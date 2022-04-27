@@ -11,7 +11,7 @@ from gada_chat_service.core.related_answer.specs import InsertRelatedAnswerSpec
 
 class RelatedAnswerAccessor(IRelatedAnswerAccessor):
     def __init__(self):
-        engine = create_engine("postgresql+psycopg2://postgres:AdminPassword123@localhost/chat")
+        engine = create_engine("postgresql+psycopg2://postgres:AdminPassword123@localhost/chat-service")
         self._session = Session(bind=engine)
         self._query = self._session.query(RelatedAnswer)
 
