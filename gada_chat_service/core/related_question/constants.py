@@ -4,6 +4,7 @@ from enum import Enum
 class ContextType(Enum):
     PRODUCT = "PRODUCT"
     ORDER = "ORDER"
+    GENERAL = "GENERAL"
 
 
 class TriggerAction(Enum):
