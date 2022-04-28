@@ -26,3 +26,7 @@ class IBaseQuestionAccessor(ABC):
     @abstractmethod
     def get_by_context(self, spec: BaseQuestionContext) -> Optional[List[BaseQuestionDomain]]:
         raise NotImplementedError
+
+    @abstractmethod
+    def get_all(self) -> Optional[List[BaseQuestionDomain]]:
+        raise NotImplementedError

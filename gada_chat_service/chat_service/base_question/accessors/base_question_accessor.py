@@ -71,3 +71,15 @@ class BaseQuestionAccessor(IBaseQuestionAccessor):
             result.append(base.to_domain())
 
         return result
+
+    def get_all(self) -> Optional[List[BaseQuestionDomain]]:
+        base_question = self._query.order_by(BaseQuestion.id.desc())
+
+        if base_question is None:
+            return None
+
+        result = []
+        for base in base_question:
+            result.append(base.to_domain())
+
+        return result

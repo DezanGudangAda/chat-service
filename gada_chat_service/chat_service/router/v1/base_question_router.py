@@ -14,6 +14,7 @@ base_question_router = APIRouter(
     tags=["Base Question"],
 )
 
+
 @base_question_router.post("")
 async def create_base_question(spec: CreateBaseQuestionSpec):
     res = base_question_service.create(spec)
@@ -23,11 +24,22 @@ async def create_base_question(spec: CreateBaseQuestionSpec):
         "message": "succeed"
     }
 
+
 @base_question_router.get("/context")
 async def create_base_question(context: BaseQuestionContext):
     res = base_question_service.get_by_context(GetByContextSpec(
         context=context
     ))
+
+    return {
+        "data": res,
+        "message": "succeed"
+    }
+
+
+@base_question_router.get("")
+async def get_all_base_questions():
+    res = base_question_service.get_all()
 
     return {
         "data": res,

@@ -68,3 +68,22 @@ class BaseQuestionService:
             context=question.context,
             id=question.id,
         )
+
+    def get_all(self) -> Optional[List[BaseQuestionResult]]:
+        questions = self.base_question_accessor.get_all()
+
+        if questions is None:
+            raise HTTPException(status_code=404, detail="not question yet")
+
+        result = []
+        for question in questions:
+            result.append(
+                BaseQuestionResult(
+                    question=question.question,
+                    context=question.context,
+                    code=question.code,
+                    id=question.id,
+                )
+            )
+
+        return result
