@@ -34,3 +34,13 @@ async def get_next_nodes(path: str = ""):
         "data": res,
         "message": "succeed"
     }
+
+
+@qna_journey_router.get("")
+async def get_all_qna_journey():
+    res = qna_journey_service.get_all()
+
+    return {
+        "data": res,
+        "message": "succeed"
+    }

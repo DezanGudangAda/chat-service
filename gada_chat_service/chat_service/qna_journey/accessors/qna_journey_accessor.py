@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy import create_engine, update
 from sqlalchemy.orm import Session
@@ -60,3 +60,16 @@ class QnaJourneyAccessor(IQnaJourneyAccessor):
             return None
 
         return current_journey.to_domain()
+
+    def get_all(self) -> Optional[List[QnaJourneyDomain]]:
+        current_journey = self._query.order_by(QnaJourney.id.desc())
+
+        if current_journey is None:
+            return None
+
+        result = []
+
+        for journey in current_journey:
+            result.append(journey.to_domain())
+
+        return result

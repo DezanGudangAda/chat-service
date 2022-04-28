@@ -1,5 +1,5 @@
 import json
-from typing import Optional
+from typing import Optional, List, Dict
 
 from fastapi import HTTPException
 from injector import inject
@@ -75,7 +75,7 @@ class QnaJourneyService:
     def _get_next_node_orchestrator(self, node: str) -> Optional[NodeResult]:
         node_type = self._check_node_type(node)
         text = ""
-        print(node_type.value)
+        print(node_type.value, node)
         if node_type is None:
             raise HTTPException(status_code=400, detail="question or answer is not valid")
 
@@ -99,18 +99,21 @@ class QnaJourneyService:
 
         if len(next_nodes.nodes) == 1 and next_nodes.nodes[0] == spec.current_path:
             return GetNextNodesResult(
-            nodes=[]
-        )
+                nodes=[]
+            )
 
         trimmed_nodes = []
         for node in next_nodes.nodes:
-            # TODO: Check if code is exists
             trimmed_nodes.append(node.replace(f"{spec.current_path}/", ""))
 
         result = []
+        checker = {}
         for node in trimmed_nodes:
-            get_detail_node = self._get_next_node_orchestrator(node)
-            result.append(get_detail_node)
+            split_node = node.split("/", 1)
+            if checker.get(split_node[0]) is not True:
+                get_detail_node = self._get_next_node_orchestrator(split_node[0])
+                result.append(get_detail_node)
+                checker[split_node[0]] = True
 
         return GetNextNodesResult(
             nodes=result
@@ -137,7 +140,7 @@ class QnaJourneyService:
             if not found:
                 raise HTTPException(status_code=400, detail="before node is not found in the path journey")
 
-            split_path.insert(split_path.index(spec.before_node_code)+1, spec.node_code)
+            split_path.insert(split_path.index(spec.before_node_code) + 1, spec.node_code)
             path = "/".join(split_path)
 
         elif spec.before_node_code is None:
@@ -149,3 +152,7 @@ class QnaJourneyService:
         ))
 
         return
+
+    def get_all(self) -> Optional[List[QnaJourneyDomain]]:
+        qna_journeys = self.qna_journey_accessor.get_all()
+        return qna_journeys
