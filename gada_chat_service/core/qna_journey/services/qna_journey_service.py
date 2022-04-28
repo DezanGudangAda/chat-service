@@ -75,7 +75,7 @@ class QnaJourneyService:
     def _get_next_node_orchestrator(self, node: str) -> Optional[NodeResult]:
         node_type = self._check_node_type(node)
         text = ""
-        print(node_type.value, node)
+
         if node_type is None:
             raise HTTPException(status_code=400, detail="question or answer is not valid")
 
