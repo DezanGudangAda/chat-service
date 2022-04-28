@@ -24,8 +24,8 @@ class GetNextNodesResult:
 @dataclass
 class AppendNewNodeSpec:
     id: int
-    before_node_code: Optional[str]
-    node_code: str
+    before_node_code: Optional[str] # RA0
+    node_code: str #
 
 
 @dataclass

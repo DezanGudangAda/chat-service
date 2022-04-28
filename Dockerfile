@@ -1,10 +1,21 @@
-FROM python:3.8-slim
+FROM python:3.8-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+#add venv
+RUN \
+ apk add --no-cache postgresql-libs && \
+ apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
+ apk add libffi-dev
+
+RUN pip install pipenv
+
+
+RUN python -m venv chat-env
+
 
 COPY . .
 
-CMD [ "python", "./main.py" ]
+RUN pipenv install --system --deploy --ignore-pipfile
+
+CMD ["python", "main.py"]

@@ -94,6 +94,9 @@ class QnaJourneyService:
             code=node,
         )
 
+    # TODO: Add validation in get next nodes
+    # TODO: Add rate limit (setiap 5 menit)
+    # TODO: Full text chat in channel
     def get_next_nodes(self, spec: GetNextNodesSpec) -> Optional[GetNextNodesResult]:
         next_nodes = self.qna_journey_accessor.get_related_nodes(spec.current_path)
 
