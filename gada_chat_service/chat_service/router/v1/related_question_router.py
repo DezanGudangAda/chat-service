@@ -1,8 +1,6 @@
 from fastapi import APIRouter
 
 from gada_chat_service.chat_service.injector import injector
-from gada_chat_service.core.related_answer.services.related_answer_service import RelatedAnswerService
-from gada_chat_service.core.related_answer.specs import CreateRelatedAnswerSpec, GetByCodeSpec
 from gada_chat_service.core.related_question.services.related_question_service import RelatedQuestionService
 from gada_chat_service.core.related_question.specs import CreateRelatedQuestionSpec
 

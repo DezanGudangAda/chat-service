@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 
 from fastapi import HTTPException
@@ -10,6 +11,7 @@ from gada_chat_service.core.qna_journey.models import QnaJourneyDomain
 from gada_chat_service.core.qna_journey.specs import CreateJourneySpec, GetNextNodesSpec, GetNextNodesResult, \
     NodeResult, AppendNewNodeSpec, UpdatePathSpec
 from gada_chat_service.core.related_answer.services.related_answer_service import RelatedAnswerService
+from gada_chat_service.core.related_answer.specs import GetByCodeSpec
 from gada_chat_service.core.related_question.services.related_question_service import RelatedQuestionService
 
 
@@ -55,7 +57,9 @@ class QnaJourneyService:
         return question.question
 
     def _get_related_answer(self, code: str) -> Optional[str]:
-        related_answer = self.related_answer_service.get_by_code(code)
+        related_answer = self.related_answer_service.get_by_code(GetByCodeSpec(
+            code=code
+        ))
         if related_answer is None:
             raise HTTPException(status_code=400, detail=f"{code} Related Answer not found")
 
@@ -71,21 +75,21 @@ class QnaJourneyService:
     def _get_next_node_orchestrator(self, node: str) -> Optional[NodeResult]:
         node_type = self._check_node_type(node)
         text = ""
-
+        print(node_type.value)
         if node_type is None:
             raise HTTPException(status_code=400, detail="question or answer is not valid")
 
-        if node_type == PrefixIdentifier.BASE_QUESTION:
+        if node_type == node_type.BASE_QUESTION:
             text = self._get_base_question(node)
 
-        if node_type == PrefixIdentifier.RELATED_ANSWER:
+        if node_type == node_type.RELATED_ANSWER:
             text = self._get_related_answer(node)
 
-        if node_type == PrefixIdentifier.RELATED_QUESTION:
+        if node_type == node_type.RELATED_QUESTION:
             text = self._get_related_question(node)
 
         return NodeResult(
-            node_type=node_type,
+            node_type=node_type.value,
             text=text,
             code=node,
         )
@@ -93,11 +97,14 @@ class QnaJourneyService:
     def get_next_nodes(self, spec: GetNextNodesSpec) -> Optional[GetNextNodesResult]:
         next_nodes = self.qna_journey_accessor.get_related_nodes(spec.current_path)
 
-        if next_nodes is None:
-            return None
+        if len(next_nodes.nodes) == 1 and next_nodes.nodes[0] == spec.current_path:
+            return GetNextNodesResult(
+            nodes=[]
+        )
 
         trimmed_nodes = []
         for node in next_nodes.nodes:
+            # TODO: Check if code is exists
             trimmed_nodes.append(node.replace(f"{spec.current_path}/", ""))
 
         result = []
