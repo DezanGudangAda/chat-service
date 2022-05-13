@@ -1,9 +1,12 @@
+import asyncio.exceptions
+from contextlib import ExitStack
 from typing import Optional
 
 from injector import inject
 
+from gada_chat_service.chat_service.user.ports import IUserServiceProvider
 from gada_chat_service.core.channel.accessors.channel_accessor import IChannelAccessor
-from gada_chat_service.core.getstream.constant import ContextType
+from gada_chat_service.core.getstream.constant import ContextType, UserType
 from gada_chat_service.core.getstream.services.getstream_service import GetStreamService
 from gada_chat_service.core.getstream.specs import GenerateUserTokenSpec, ChatSpec, ProductAttachmentSpec, \
     OrderAttachmentSpec, ChatMetaSpec
@@ -19,10 +22,62 @@ class UserService:
             stream_service: GetStreamService,
             user_accessor: IUserAccessor,
             channel_accessor: IChannelAccessor,
+            user_service_provider: IUserServiceProvider
     ):
+        self.user_service_provider = user_service_provider
         self.channel_accessor = channel_accessor
         self.stream_service = stream_service
         self.user_accessor = user_accessor
+
+    def _validate_buyer(self, buyer_username: str, coro) -> Optional[str]:
+        try:
+            current_buyer = self.user_accessor.get_user_by_username_and_type(GetUserTokenSpec(
+                username=buyer_username,
+                type=UserType.BUYER.value
+            ))
+
+            if current_buyer is not None:
+                coro.cancel()
+                return current_buyer.name
+
+            buyer_name = self.user_service_provider.get_buyer_name(buyer_username)
+            if buyer_name is None:
+                coro.cancel()
+                return None
+
+            return buyer_name
+        except asyncio.exceptions.CancelledError:
+            return None
+
+    def _validate_seller(self, seller_id: str, coro) -> Optional[str]:
+        try:
+            current_seller = self.user_accessor.get_user_by_username_and_type(GetUserTokenSpec(
+                username=seller_id,
+                type=UserType.SELLER.value
+            ))
+
+            if current_seller is not None:
+                coro.cancel()
+                return current_seller.name
+
+            buyer_name = self.user_service_provider.get_buyer_name(seller_id)
+            if buyer_name is None:
+                coro.cancel()
+                return None
+
+            return buyer_name
+        except asyncio.exceptions.CancelledError:
+            return None
+
+    async def is_users_valid(self, buyer_username: str, seller_id: str) -> bool:
+        is_valid = True
+
+    def get_buyer_name(self, username: str) -> Optional[str]:
+        current_user = self.user_accessor.get_user_detail(username)
+        if current_user is None:
+            return None
+
+        return current_user.name
 
     def get_or_create_user_and_token(self, spec: GetUserTokenSpec) -> Optional[UserDomain]:
         existing_user = self.user_accessor.get_user_by_username_and_type(spec)

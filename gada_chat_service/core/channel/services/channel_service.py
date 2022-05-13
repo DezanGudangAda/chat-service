@@ -30,6 +30,9 @@ class ChannelService:
         self.stream_service = stream_service
 
     def get_or_create_channel(self, spec: CreateChanSpec) -> Optional[ChannelDomain]:
+        # TODO: Validate to Marketplace API
+
+
         seller_stream_account = self.user_service.get_or_create_user_and_token(GetUserTokenSpec(
             username=spec.seller_username,
             type=UserType.SELLER

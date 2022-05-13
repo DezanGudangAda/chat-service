@@ -31,3 +31,8 @@ class SendChatSpec:
     channel_id: str
     context: Optional[ContextSpec]
 
+
+@dataclass
+class ValidateUserReturn:
+    is_valid: bool
+    details: Optional[str]

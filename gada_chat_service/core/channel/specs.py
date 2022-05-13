@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from gada_chat_service.core.channel.constants import TargetType
+
 
 @dataclass
 class InsertChannelSpec:
@@ -11,8 +13,10 @@ class InsertChannelSpec:
 
 @dataclass
 class CreateChannelSpec:
-    buyer_getstream_id: str
-    seller_username: str
+    username: str
+    target: str
+    target_type: TargetType
+    source: str
 
 
 @dataclass
