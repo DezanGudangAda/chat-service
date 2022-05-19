@@ -1,10 +1,8 @@
-import asyncio.exceptions
-from contextlib import ExitStack
 from typing import Optional
 
 from injector import inject
 
-from gada_chat_service.chat_service.user.ports import IUserServiceProvider
+from gada_chat_service.core.user.ports import IUserServiceProvider
 from gada_chat_service.core.channel.accessors.channel_accessor import IChannelAccessor
 from gada_chat_service.core.getstream.constant import ContextType, UserType
 from gada_chat_service.core.getstream.services.getstream_service import GetStreamService
@@ -12,7 +10,7 @@ from gada_chat_service.core.getstream.specs import GenerateUserTokenSpec, ChatSp
     OrderAttachmentSpec, ChatMetaSpec
 from gada_chat_service.core.user.accessor.user_accessor import IUserAccessor
 from gada_chat_service.core.user.models import UserDomain
-from gada_chat_service.core.user.specs import GetUserTokenSpec, InsertUserTokenSpec, SendChatSpec
+from gada_chat_service.core.user.specs import InsertUserTokenSpec, SendChatSpec, RegisterUserSpec
 
 
 class UserService:
@@ -29,74 +27,42 @@ class UserService:
         self.stream_service = stream_service
         self.user_accessor = user_accessor
 
-    def _validate_buyer(self, buyer_username: str, coro) -> Optional[str]:
-        try:
-            current_buyer = self.user_accessor.get_user_by_username_and_type(GetUserTokenSpec(
-                username=buyer_username,
-                type=UserType.BUYER.value
-            ))
-
-            if current_buyer is not None:
-                coro.cancel()
-                return current_buyer.name
-
-            buyer_name = self.user_service_provider.get_buyer_name(buyer_username)
-            if buyer_name is None:
-                coro.cancel()
-                return None
-
-            return buyer_name
-        except asyncio.exceptions.CancelledError:
-            return None
-
-    def _validate_seller(self, seller_id: str, coro) -> Optional[str]:
-        try:
-            current_seller = self.user_accessor.get_user_by_username_and_type(GetUserTokenSpec(
-                username=seller_id,
-                type=UserType.SELLER.value
-            ))
-
-            if current_seller is not None:
-                coro.cancel()
-                return current_seller.name
-
-            buyer_name = self.user_service_provider.get_buyer_name(seller_id)
-            if buyer_name is None:
-                coro.cancel()
-                return None
-
-            return buyer_name
-        except asyncio.exceptions.CancelledError:
-            return None
-
-    async def is_users_valid(self, buyer_username: str, seller_id: str) -> bool:
-        is_valid = True
-
-    def get_buyer_name(self, username: str) -> Optional[str]:
-        current_user = self.user_accessor.get_user_detail(username)
-        if current_user is None:
-            return None
-
-        return current_user.name
-
-    def get_or_create_user_and_token(self, spec: GetUserTokenSpec) -> Optional[UserDomain]:
-        existing_user = self.user_accessor.get_user_by_username_and_type(spec)
-        if existing_user is not None:
-            return existing_user
-
+    def register_user(self, spec: RegisterUserSpec) -> Optional[UserDomain]:
         stream_token = self.stream_service.generate_token(GenerateUserTokenSpec(
-            username=spec.username,
-            type=spec.type
+            username=spec.identity,
+            type=spec.user_type
         ))
 
         new_token = self.user_accessor.create_user_and_token(InsertUserTokenSpec(
-            username=spec.username,
-            type=spec.type,
+            username=spec.identity,
+            type=spec.user_type,
             token=stream_token.token,
-            getstream_id=stream_token.stream_id
+            getstream_id=stream_token.stream_id,
+            name=spec.name
         ))
 
         return new_token
+
+    def get_user_detail(self, identity: str, user_type: UserType) -> Optional[UserDomain]:
+        is_seller = True
+        if user_type == UserType.BUYER:
+            is_seller = False
+
+        current_user = self.user_accessor.get_user_detail(identity, is_seller)
+        if current_user is not None:
+            return current_user
+
+        get_from_api = self.user_service_provider.get_user_marketplace_detail(identity, is_seller)
+        if get_from_api is None:
+            return None
+
+        return self.register_user(
+            RegisterUserSpec(
+                user_type=user_type,
+                identity=identity,
+                name=get_from_api.name
+            )
+        )
 
     def send_message(self, spec: SendChatSpec):
         channel = self.channel_accessor.get_channel_by_id(spec.channel_id)

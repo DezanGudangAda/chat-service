@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 
 from fastapi import HTTPException
@@ -5,14 +6,16 @@ from injector import inject
 
 from gada_chat_service.chat_service.user.accessors.user_accessor import UserAccessor
 from gada_chat_service.core.channel.accessors.channel_accessor import IChannelAccessor
+from gada_chat_service.core.channel.constants import TargetType, SELLER_INDEX, BUYER_INDEX, SELLER_NAME_STREAM_KEY, \
+    BUYER_NAME_STREAM_KEY
 from gada_chat_service.core.channel.models import ChannelDomain
-from gada_chat_service.core.channel.specs import InsertChannelSpec, CreateChannelSpec, GetChannelSpec, GetChannelDbSpec
+from gada_chat_service.core.channel.specs import GetChannelListSpec, \
+    GetChannelListReturn, ChannelRoomReturn
+from gada_chat_service.core.channel.specs import InsertChannelSpec, GetChannelSpec, GetChannelDbSpec
 from gada_chat_service.core.getstream.constant import UserType
 from gada_chat_service.core.getstream.services.getstream_service import GetStreamService
-from gada_chat_service.core.getstream.specs import CreateChannelSpec
-from gada_chat_service.core.channel.specs import CreateChannelSpec as CreateChanSpec
+from gada_chat_service.core.getstream.specs import CreateChannelSpec as CreateStreamChannel
 from gada_chat_service.core.user.services.user_services import UserService
-from gada_chat_service.core.user.specs import GetUserTokenSpec
 
 
 class ChannelService:
@@ -29,69 +32,110 @@ class ChannelService:
         self.channel_accessor = channel_accessor
         self.stream_service = stream_service
 
-    def get_or_create_channel(self, spec: CreateChanSpec) -> Optional[ChannelDomain]:
-        # TODO: Validate to Marketplace API
-
-
-        seller_stream_account = self.user_service.get_or_create_user_and_token(GetUserTokenSpec(
-            username=spec.seller_username,
-            type=UserType.SELLER
-        ))
-
-        channel = self.channel_accessor.get_channel_by_users(GetChannelDbSpec(
-            seller_getstream_id=seller_stream_account.getstream_id,
-            buyer_getstream_id=spec.buyer_getstream_id
-        ))
-        if channel is not None:
-            return channel
-
-        create_channel = self.stream_service.create_channel(CreateChannelSpec(
-            seller_getstream_id=seller_stream_account.getstream_id,
+    def create_channel(self, spec: InsertChannelSpec) -> Optional[ChannelDomain]:
+        create_channel = self.stream_service.create_channel(CreateStreamChannel(
+            seller_getstream_id=spec.seller_getstream_id,
             buyer_getstream_id=spec.buyer_getstream_id,
+            seller_name=spec.seller_name,
+            buyer_name=spec.buyer_name
         ))
 
         new_channel = self.channel_accessor.create_channel(InsertChannelSpec(
             channel_id=create_channel.channel_id,
-            channel_name=f"{seller_stream_account.getstream_id}-{spec.buyer_getstream_id}",
-            seller_getstream_id=seller_stream_account.getstream_id,
+            channel_name=spec.channel_name,
+            seller_getstream_id=spec.seller_getstream_id,
             buyer_getstream_id=spec.buyer_getstream_id,
+            buyer_name=spec.buyer_name,
+            seller_name=spec.seller_name
         ))
 
         return new_channel
 
-    def get_channel(self, spec: GetChannelSpec) -> Optional[ChannelDomain]:
-        check_getstream = self.user_accessor.get_user_by_getstream_id(spec.getstream_id)
+    def open_channel(self, spec: GetChannelSpec) -> Optional[ChannelDomain]:
+        seller_identity = None
+        buyer_identity = None
 
-        if check_getstream is None:
-            raise HTTPException(status_code=404, detail="user not registered")
+        if spec.target_type.SELLER == TargetType.SELLER:
+            seller_identity = spec.target
+            buyer_identity = spec.username
+        elif spec.target_type.BUYER == TargetType.BUYER:
+            seller_identity = spec.username
+            buyer_identity = spec.target
 
-        if check_getstream.account_type == UserType.SELLER.value:
-            target_user = self.user_service.get_or_create_user_and_token(GetUserTokenSpec(
-                username=spec.target_username,
-                type=UserType.BUYER
-            ))
+        seller_chat_account = self.user_service.get_user_detail(seller_identity, UserType.SELLER)
+        if seller_chat_account is None:
+            raise HTTPException(status_code=400, detail="seller not valid")
 
-            channel = self.channel_accessor.get_channel_by_users(GetChannelDbSpec(
-                buyer_getstream_id=spec.getstream_id,
-                seller_getstream_id=target_user.getstream_id
-            ))
+        buyer_chat_account = self.user_service.get_user_detail(buyer_identity, UserType.BUYER)
+        if buyer_chat_account is None:
+            raise HTTPException(status_code=400, detail="buyer not valid")
 
-            if channel is None:
-                raise HTTPException(status_code=404, detail="Channel not found")
-
-            return channel
-
-        target_user = self.user_service.get_or_create_user_and_token(GetUserTokenSpec(
-            username=spec.target_username,
-            type=UserType.SELLER
+        current_channel = self.channel_accessor.get_channel_by_users(GetChannelDbSpec(
+            seller_getstream_id=seller_chat_account.getstream_id,
+            buyer_getstream_id=buyer_chat_account.getstream_id
         ))
 
-        channel = self.channel_accessor.get_channel_by_users(GetChannelDbSpec(
-            buyer_getstream_id=check_getstream.getstream_id,
-            seller_getstream_id=target_user.getstream_id
+        if current_channel is not None:
+            return current_channel
+
+        stream_channel = self.stream_service.create_channel(CreateStreamChannel(
+            seller_getstream_id=seller_chat_account.getstream_id,
+            buyer_getstream_id=buyer_chat_account.getstream_id,
+            seller_name=seller_chat_account.name,
+            buyer_name=buyer_chat_account.name
         ))
 
-        if channel is None:
-            raise HTTPException(status_code=404, detail="Channel not found")
+        return self.create_channel(InsertChannelSpec(
+            seller_getstream_id=seller_chat_account.getstream_id,
+            buyer_getstream_id=buyer_chat_account.getstream_id,
+            channel_id=stream_channel.channel_id,
+            channel_name=stream_channel.channel_name,
+            seller_name=seller_chat_account.name,
+            buyer_name=buyer_chat_account.name
+        ))
 
-        return channel
+    def channel_list(self, spec: GetChannelListSpec) -> Optional[GetChannelListReturn]:
+        index = SELLER_INDEX
+        key_name = SELLER_NAME_STREAM_KEY
+        if spec.role == UserType.BUYER:
+            index = BUYER_INDEX
+            key_name = BUYER_NAME_STREAM_KEY
+
+        user = self.user_service.get_user_detail(spec.identity, spec.role)
+        if user is None:
+            raise HTTPException(status_code=400, detail="user not valid")
+
+        detail_stream_channel = self.stream_service.get_channel_detail(user.getstream_id)
+        result = []
+
+        get_channels = detail_stream_channel.get("channels")
+        for chan in get_channels:
+            messages = chan.get("messages")
+            if not messages:
+                continue
+
+            read = chan.get("read")
+            if len(read) != 2:
+                continue
+
+            channel_detail = chan.get("channel")
+
+            unread_message = read[index].get("unread_messages")
+            last_message_at = messages[0].get("created_at")
+            last_message = messages[0].get("text")
+            channel_id = channel_detail.get("id")
+            sender = channel_detail.get(key_name)
+            if sender is None:
+                sender = "No Name"
+
+            result.append(ChannelRoomReturn(
+                channel_id=channel_id,
+                name=sender,
+                last_chat=last_message,
+                unread_chat=unread_message,
+                date=last_message_at
+            ))
+
+        return GetChannelListReturn(
+            chat_rooms=result,
+        )

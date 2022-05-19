@@ -1,4 +1,5 @@
-from typing import Optional
+from sqlalchemy import or_
+from typing import Optional, List
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -43,3 +44,16 @@ class ChannelAccessor(IChannelAccessor):
             return None
 
         return chan.to_domain()
+
+    def get_channel_by_user(self, getstream_id: str) -> Optional[List[ChannelDomain]]:
+        chan = self._query. \
+            filter(or_(Channel.seller_getstream_id == getstream_id, Channel.buyer_getstream_id == getstream_id))
+
+        if chan is None:
+            return None
+
+        res = []
+        for c in chan:
+            res.append(c.to_domain())
+
+        return res

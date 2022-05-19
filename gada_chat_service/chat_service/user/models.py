@@ -13,6 +13,7 @@ class User(Base):
     stream_token = Column(String)
     account_type = Column(String, nullable=False)
     getstream_id = Column(String)
+    name = Column(String)
 
     def to_domain(self) -> UserDomain:
         domain = ObjectMapperUtil.map(self, UserDomain)

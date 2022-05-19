@@ -19,5 +19,5 @@ class IUserAccessor(ABC):
     def get_user_by_getstream_id(self, getstream_id: str) -> Optional[UserDomain]:
         raise NotImplementedError
 
-    def get_user_detail(self, user_identity: str, is_buyer: bool = True) -> Optional[UserDomain]:
+    def get_user_detail(self, user_identity: str, is_seller: bool = True) -> Optional[UserDomain]:
         raise NotImplementedError

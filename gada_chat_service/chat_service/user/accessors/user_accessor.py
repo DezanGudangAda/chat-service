@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from gada_chat_service.chat_service.user.models import User
+from gada_chat_service.core.getstream.constant import UserType
 from gada_chat_service.core.user.accessor.user_accessor import IUserAccessor
 from gada_chat_service.core.user.models import UserDomain
 from gada_chat_service.core.user.specs import InsertUserTokenSpec, GetUserTokenSpec
@@ -30,6 +31,7 @@ class UserAccessor(IUserAccessor):
         new_user.account_type = spec.type.value
         new_user.stream_token = spec.token
         new_user.getstream_id = spec.getstream_id
+        new_user.name = spec.name
 
         self._session.add(new_user)
         self._session.commit()
@@ -39,6 +41,20 @@ class UserAccessor(IUserAccessor):
     def get_user_by_getstream_id(self, getstream_id: str) -> Optional[UserDomain]:
         user = self._query. \
             filter(User.getstream_id == getstream_id).first()
+
+        if user is None:
+            return None
+
+        return user.to_domain()
+
+    def get_user_detail(self, user_identity: str, is_seller: bool = True) -> Optional[UserDomain]:
+        # TODO: Refactor this, should not contain logic in accessor
+        account_type = UserType.SELLER.value
+        if not is_seller:
+            account_type = UserType.BUYER.value
+
+        user = self._query. \
+            filter(User.account_type == account_type, User.username == user_identity).first()
 
         if user is None:
             return None

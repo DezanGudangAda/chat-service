@@ -20,6 +20,8 @@ class GenerateUserTokenResult:
 class CreateChannelSpec:
     buyer_getstream_id: str
     seller_getstream_id: str
+    seller_name: str
+    buyer_name: str
 
 
 @dataclass
@@ -76,3 +78,10 @@ class ChatSpec:
     product_attachment: List[ProductAttachmentSpec]
     order_attachment: Optional[OrderAttachmentSpec]
     chat_meta: Optional[ChatMetaSpec]
+
+
+@dataclass
+class ChannelDetail:
+    last_message: str
+    unread_chat: str
+    last_message_at: str

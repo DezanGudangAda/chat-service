@@ -16,6 +16,7 @@ class InsertUserTokenSpec:
     type: UserType
     getstream_id: str
     token: str
+    name: str
 
 
 @dataclass
@@ -36,3 +37,10 @@ class SendChatSpec:
 class ValidateUserReturn:
     is_valid: bool
     details: Optional[str]
+
+
+@dataclass
+class RegisterUserSpec:
+    user_type: UserType
+    identity: str
+    name: str
