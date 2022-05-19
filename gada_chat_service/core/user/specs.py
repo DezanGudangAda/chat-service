@@ -44,3 +44,14 @@ class RegisterUserSpec:
     user_type: UserType
     identity: str
     name: str
+
+
+@dataclass
+class GetUnreadChatSpec:
+    username: str
+    role: UserType
+
+
+@dataclass
+class GetUnreadChatReturn:
+    unread_chat: str

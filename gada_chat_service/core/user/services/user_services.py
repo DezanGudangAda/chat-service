@@ -1,7 +1,11 @@
 from typing import Optional
 
+from fastapi import HTTPException
 from injector import inject
 
+from gada_chat_service.core.channel.constants import OrderType, SELLER_INDEX, BUYER_INDEX
+# from gada_chat_service.core.channel.services.channel_service import ChannelService
+from gada_chat_service.core.channel.specs import GetChannelListSpec
 from gada_chat_service.core.user.ports import IUserServiceProvider
 from gada_chat_service.core.channel.accessors.channel_accessor import IChannelAccessor
 from gada_chat_service.core.getstream.constant import ContextType, UserType
@@ -10,7 +14,8 @@ from gada_chat_service.core.getstream.specs import GenerateUserTokenSpec, ChatSp
     OrderAttachmentSpec, ChatMetaSpec
 from gada_chat_service.core.user.accessor.user_accessor import IUserAccessor
 from gada_chat_service.core.user.models import UserDomain
-from gada_chat_service.core.user.specs import InsertUserTokenSpec, SendChatSpec, RegisterUserSpec
+from gada_chat_service.core.user.specs import InsertUserTokenSpec, SendChatSpec, RegisterUserSpec, GetUnreadChatSpec, \
+    GetUnreadChatReturn, GetUserTokenSpec
 
 
 class UserService:
@@ -20,7 +25,7 @@ class UserService:
             stream_service: GetStreamService,
             user_accessor: IUserAccessor,
             channel_accessor: IChannelAccessor,
-            user_service_provider: IUserServiceProvider
+            user_service_provider: IUserServiceProvider,
     ):
         self.user_service_provider = user_service_provider
         self.channel_accessor = channel_accessor
@@ -121,3 +126,55 @@ class UserService:
 
         chat = self.stream_service.send_message(chat_spec)
         return chat
+
+    def get_unread_chat(self, spec: GetUnreadChatSpec) -> Optional[GetUnreadChatReturn]:
+        is_valid = True
+        is_seller = True
+        index = SELLER_INDEX
+
+        if spec.role == UserType.BUYER:
+            is_seller = False
+            index = BUYER_INDEX
+
+        current_user = self.user_accessor.get_user_by_username_and_type(GetUserTokenSpec(
+            username=spec.username,
+            type=spec.role
+        ))
+
+        if current_user is None:
+            is_valid = False
+
+        get_from_api = self.user_service_provider.get_user_marketplace_detail(spec.username, is_seller)
+
+        if get_from_api is None and not is_valid:
+            raise HTTPException(status_code=400, detail="user not valid")
+
+        register_user = self.register_user(RegisterUserSpec(
+            identity=spec.username,
+            name=get_from_api.name,
+            user_type=spec.role,
+        ))
+
+        if not is_valid and get_from_api is not None:
+            return GetUnreadChatReturn(
+                unread_chat="0"
+            )
+
+        detail_stream_channel = self.stream_service.get_channel_detail(current_user.getstream_id)
+
+        get_channels = detail_stream_channel.get("channels")
+        total = 0
+        for chan in get_channels:
+            messages = chan.get("messages")
+            if not messages:
+                continue
+
+            read = chan.get("read")
+            if len(read) != 2:
+                continue
+
+            total += int(read[index].get("unread_messages"))
+
+        return GetUnreadChatReturn(
+            unread_chat=str(total)
+        )
