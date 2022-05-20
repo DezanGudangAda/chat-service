@@ -15,6 +15,7 @@ injector = "*"
 uvicorn = "*"
 fastapi = "*"
 dacite = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 

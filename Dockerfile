@@ -1,21 +1,11 @@
-FROM python:3.8-alpine
+FROM python:3.9
 
-WORKDIR /app
+WORKDIR /
 
-#add venv
-RUN \
- apk add --no-cache postgresql-libs && \
- apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
- apk add libffi-dev
+COPY ./requirements.txt /requirements.txt
 
-RUN pip install pipenv
-
-
-RUN python -m venv chat-env
-
+RUN pip install --no-cache-dir --upgrade -r /requirements.txt
 
 COPY . .
 
-RUN pipenv install --system --deploy --ignore-pipfile
-
-CMD ["python", "main.py"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5555"]
