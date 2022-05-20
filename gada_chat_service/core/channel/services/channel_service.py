@@ -10,7 +10,7 @@ from gada_chat_service.core.channel.constants import TargetType, SELLER_INDEX, B
     BUYER_NAME_STREAM_KEY
 from gada_chat_service.core.channel.models import ChannelDomain
 from gada_chat_service.core.channel.specs import GetChannelListSpec, \
-    GetChannelListReturn, ChannelRoomReturn
+    GetChannelListReturn, ChannelRoomReturn, SearchChannelSpec, SearchChannelReturn
 from gada_chat_service.core.channel.specs import InsertChannelSpec, GetChannelSpec, GetChannelDbSpec
 from gada_chat_service.core.getstream.constant import UserType
 from gada_chat_service.core.getstream.services.getstream_service import GetStreamService
@@ -139,3 +139,7 @@ class ChannelService:
         return GetChannelListReturn(
             chat_rooms=result,
         )
+
+
+    def search_channel(self, spec: SearchChannelSpec) -> Optional[SearchChannelReturn]:
+        return None

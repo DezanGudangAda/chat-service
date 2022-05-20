@@ -5,14 +5,16 @@ from stream_chat import StreamChat
 from stream_chat.channel import Channel
 
 from gada_chat_service.core.commons.utils import DictionaryUtil
+from gada_chat_service.core.config.services.configuration_service import ConfigurationService
 from gada_chat_service.core.getstream.specs import GenerateUserTokenSpec, GenerateUserTokenResult, CreateChannelSpec, \
     CreateChannelResult, ChatSpec, ChannelDetail
 
 
 class GetStreamService:
     def __init__(self):
-        self.stream = StreamChat(api_key="s64rjsmsy237",
-                                 api_secret="dad9ebwsh734rwuctctfnuyujq5gdpneha6w36gev7p9m8m4bj9sz9fndqeej3kn")
+        self.configuration_service = ConfigurationService()
+        self.stream = StreamChat(api_key=self.configuration_service.get_config().get_stream.api_key,
+                                 api_secret=self.configuration_service.get_config().get_stream.secret)
 
     def generate_token(self, spec: GenerateUserTokenSpec) -> Optional[GenerateUserTokenResult]:
         stream_id = spec.username + "_" + spec.type.value.lower()

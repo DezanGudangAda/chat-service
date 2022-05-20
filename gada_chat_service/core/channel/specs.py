@@ -58,3 +58,16 @@ class GetChannelListSpec:
 @dataclass
 class GetChannelListReturn:
     chat_rooms: Optional[List[ChannelRoomReturn]]
+
+
+@dataclass
+class SearchChannelSpec:
+    role: UserType
+    keyword: str
+    identity: str
+
+
+@dataclass
+class SearchChannelReturn:
+    sender: Optional[List[ChannelRoomReturn]]
+    in_chat: Optional[List[ChannelRoomReturn]]

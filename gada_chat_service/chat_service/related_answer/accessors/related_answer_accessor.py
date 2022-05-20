@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from gada_chat_service.chat_service.related_answer.models import RelatedAnswer
+from gada_chat_service.core.config.services.configuration_service import ConfigurationService
 from gada_chat_service.core.related_answer.accessors.related_answer_accessor import IRelatedAnswerAccessor
 from gada_chat_service.core.related_answer.models import RelatedAnswerDomain
 from gada_chat_service.core.related_answer.specs import InsertRelatedAnswerSpec
@@ -11,7 +12,8 @@ from gada_chat_service.core.related_answer.specs import InsertRelatedAnswerSpec
 
 class RelatedAnswerAccessor(IRelatedAnswerAccessor):
     def __init__(self):
-        engine = create_engine("postgresql+psycopg2://postgres:AdminPassword123@localhost/chat-service")
+        self.configuration_service = ConfigurationService()
+        engine = create_engine(self.configuration_service.get_dsn())
         self._session = Session(bind=engine)
         self._query = self._session.query(RelatedAnswer)
 

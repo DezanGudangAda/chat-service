@@ -25,6 +25,7 @@ async def create_channel(spec: GetChannelSpec):
         "message": "succeed"
     }
 
+
 @channel_router.get("/list", tags=["Channel"])
 async def get_list_of_channel(role: UserType, order: OrderType, identity: str):
     res = channel_service.channel_list(GetChannelListSpec(

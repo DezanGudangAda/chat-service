@@ -8,11 +8,13 @@ from gada_chat_service.core.base_question.accessors.base_question_accessor impor
 from gada_chat_service.core.base_question.constants import BaseQuestionContext
 from gada_chat_service.core.base_question.models import BaseQuestionDomain
 from gada_chat_service.core.base_question.specs import InsertBaseQuestionSpec
+from gada_chat_service.core.config.services.configuration_service import ConfigurationService
 
 
 class BaseQuestionAccessor(IBaseQuestionAccessor):
     def __init__(self):
-        engine = create_engine("postgresql+psycopg2://postgres:AdminPassword123@localhost/chat-service")
+        self.configuration_service = ConfigurationService()
+        engine = create_engine(self.configuration_service.get_dsn())
         self._session = Session(bind=engine)
         self._query = self._session.query(BaseQuestion)
 

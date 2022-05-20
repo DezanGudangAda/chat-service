@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, update
 from sqlalchemy.orm import Session
 
 from gada_chat_service.chat_service.qna_journey.models import QnaJourney
+from gada_chat_service.core.config.services.configuration_service import ConfigurationService
 from gada_chat_service.core.qna_journey.accessors.qna_journey_accessor import IQnaJourneyAccessor
 from gada_chat_service.core.qna_journey.models import QnaJourneyDomain
 from gada_chat_service.core.qna_journey.specs import RelatedNodesResult, UpdatePathSpec
@@ -11,7 +12,8 @@ from gada_chat_service.core.qna_journey.specs import RelatedNodesResult, UpdateP
 
 class QnaJourneyAccessor(IQnaJourneyAccessor):
     def __init__(self):
-        engine = create_engine("postgresql+psycopg2://postgres:AdminPassword123@localhost/chat-service")
+        self.configuration_service = ConfigurationService()
+        engine = create_engine(self.configuration_service.get_dsn())
         self._session = Session(bind=engine)
         self._query = self._session.query(QnaJourney)
 

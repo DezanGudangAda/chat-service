@@ -8,11 +8,13 @@ from gada_chat_service.chat_service.channel.models import Channel
 from gada_chat_service.core.channel.accessors.channel_accessor import IChannelAccessor
 from gada_chat_service.core.channel.models import ChannelDomain
 from gada_chat_service.core.channel.specs import InsertChannelSpec, CreateChannelSpec, GetChannelDbSpec
+from gada_chat_service.core.config.services.configuration_service import ConfigurationService
 
 
 class ChannelAccessor(IChannelAccessor):
     def __init__(self):
-        engine = create_engine("postgresql+psycopg2://postgres:AdminPassword123@localhost/chat")
+        self.configuration_service = ConfigurationService()
+        engine = create_engine(self.configuration_service.get_dsn())
         self._session = Session(bind=engine)
         self._query = self._session.query(Channel)
 

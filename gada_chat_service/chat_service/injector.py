@@ -2,6 +2,7 @@ from injector import Injector
 
 from gada_chat_service.chat_service.base_question.modules import BaseQuestionModule
 from gada_chat_service.chat_service.channel.modules import ChannelModule
+from gada_chat_service.chat_service.config.modules import ConfigurationModule
 from gada_chat_service.chat_service.getstream.modules import GetStreamModule
 from gada_chat_service.chat_service.migrations.modules import ConnectionModule
 from gada_chat_service.chat_service.qna_journey.modules import QnaJourneyModule
@@ -19,5 +20,6 @@ injector = Injector(
         RelatedAnswerModule,
         RelatedQuestionModule,
         QnaJourneyModule,
+        ConfigurationModule
     ]
 )
