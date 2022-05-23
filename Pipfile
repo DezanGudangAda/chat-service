@@ -18,6 +18,7 @@ dacite = "*"
 psycopg2-binary = "*"
 sentry-sdk = "*"
 pydantic = "*"
+from-root = "*"
 
 [dev-packages]
 

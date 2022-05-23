@@ -18,4 +18,17 @@ class ConfigurationService:
 
     def get_dsn(self) -> str:
         return f"postgresql+psycopg2://{self.config.database.username}:" \
-               f"{self.config.database.password}@{self.config.database.host}/{self.config.database.db}"
+               f"{self.config.database.password}@{self.config.database.host}:{self.config.database.port}" \
+               f"/{self.config.database.db}"
+
+    @staticmethod
+    def get_env_dsn() -> str:
+        db_host = os.getenv("DB_HOST")
+        db_username = os.getenv("DB_USERNAME")
+        db_password = os.getenv("DB_PASSWORD")
+        db_name = os.getenv("DB_NAME")
+        db_port = os.getenv("DB_PORT")
+
+        return f"postgresql+psycopg2://{db_username}:" \
+               f"{db_password}@{db_host}:{db_port}" \
+               f"/{db_name}"

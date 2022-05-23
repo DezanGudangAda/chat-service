@@ -9,22 +9,22 @@ from alembic import context
 import sys
 from sqlalchemy.orm import declarative_base
 
-from gada_chat_service.core.config.services.configuration_service import ConfigurationService
-
-Base = declarative_base()
-
 sys.path = ['', '../..'] + sys.path[1:]
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
-configuration_service = ConfigurationService()
+
+Base = declarative_base()
+
 
 from gada_chat_service.chat_service.models import *
+from gada_chat_service.core.config.services.configuration_service import ConfigurationService
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option("sqlalchemy.url", configuration_service.get_dsn())
+config.set_main_option("sqlalchemy.url", ConfigurationService.get_env_dsn())
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:

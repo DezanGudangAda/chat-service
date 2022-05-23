@@ -7,25 +7,21 @@ services:
       - "5432:5432"
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=test_db
-  web:
+      - POSTGRES_PASSWORD=AdminPassword123
+      - POSTGRES_DB=chat
+
+  backend:
+    environment:
+      - DB_HOST=db
+      - DB_USERNAME=postgres
+      - DB_NAME=chat
+      - DB_PORT=5432
+      - DB_PASSWORD=AdminPassword123
     build: .
-    command: bash -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 5555 --reload"
+    command: bash -c "cd gada_chat_service && cd chat_service && alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 5555 --reload"
     volumes:
       - .:/code
     ports:
       - "5555:5555"
-    depends_on:
-      - db
-
-  pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
-      - PGADMIN_DEFAULT_PASSWORD=admin
-    ports:
-      - "5050:80"
     depends_on:
       - db
