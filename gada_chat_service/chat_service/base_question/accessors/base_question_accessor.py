@@ -35,7 +35,7 @@ class BaseQuestionAccessor(IBaseQuestionAccessor):
     def get_by_code(self, code: str) -> Optional[BaseQuestionDomain]:
         base_question = self._query.filter(
             BaseQuestion.code == code
-        )
+        ).first()
 
         if base_question is None:
             return None

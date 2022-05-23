@@ -55,6 +55,7 @@ class GetStreamService:
             "getstream_id": spec.chat_meta.getstream_id,
             "need_reply": spec.chat_meta.need_reply,
             "channel_id": spec.chat_meta.channel_id,
+            "current_path": spec.chat_meta.current_path
         }
 
         if spec.chat_meta.reply_option is not None:

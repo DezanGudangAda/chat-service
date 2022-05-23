@@ -6,12 +6,14 @@ from injector import inject
 from gada_chat_service.core.channel.constants import OrderType, SELLER_INDEX, BUYER_INDEX
 # from gada_chat_service.core.channel.services.channel_service import ChannelService
 from gada_chat_service.core.channel.specs import GetChannelListSpec
+from gada_chat_service.core.qna_journey.services.qna_journey_service import QnaJourneyService
+from gada_chat_service.core.qna_journey.specs import GetNextNodesSpec
 from gada_chat_service.core.user.ports import IUserServiceProvider
 from gada_chat_service.core.channel.accessors.channel_accessor import IChannelAccessor
 from gada_chat_service.core.getstream.constant import ContextType, UserType
 from gada_chat_service.core.getstream.services.getstream_service import GetStreamService
 from gada_chat_service.core.getstream.specs import GenerateUserTokenSpec, ChatSpec, ProductAttachmentSpec, \
-    OrderAttachmentSpec, ChatMetaSpec
+    OrderAttachmentSpec, ChatMetaSpec, ReplyOptionSpec
 from gada_chat_service.core.user.accessor.user_accessor import IUserAccessor
 from gada_chat_service.core.user.models import UserDomain
 from gada_chat_service.core.user.specs import InsertUserTokenSpec, SendChatSpec, RegisterUserSpec, GetUnreadChatSpec, \
@@ -26,7 +28,9 @@ class UserService:
             user_accessor: IUserAccessor,
             channel_accessor: IChannelAccessor,
             user_service_provider: IUserServiceProvider,
+            qna_journey_service: QnaJourneyService
     ):
+        self.qna_journey_service = qna_journey_service
         self.user_service_provider = user_service_provider
         self.channel_accessor = channel_accessor
         self.stream_service = stream_service
@@ -72,53 +76,74 @@ class UserService:
     def send_message(self, spec: SendChatSpec):
         channel = self.channel_accessor.get_channel_by_id(spec.channel_id)
         if channel is None:
-            raise Exception("channel not found")
+            raise HTTPException(status_code=400, detail="channel not found")
 
-        user = self.user_accessor.get_user_by_getstream_id(spec.getstream_id)
+        user = self.get_user_detail(spec.identity, spec.role)
         if user is None:
-            raise Exception("user is not registered")
+            raise HTTPException(status_code=400, detail="user is not valid")
 
         product_attachments = []
         order_attachments = None
-        chat_meta = None
+        # validate current path
+
+        current_node = self.qna_journey_service.get_node_detail(spec.message_code)
+
+        current_path = ""
+        if spec.current_path == "":
+            current_path = f"{spec.message_code}"
+        else:
+            current_path = f"{spec.current_path}/{spec.message_code}"
+
+        next_path = self.qna_journey_service.get_next_nodes(GetNextNodesSpec(
+            current_path=current_path
+        ))
 
         # get product attachment
-        if spec.context.type == ContextType.PRODUCT:
-            for ids in spec.context.related_id:
-                product = ProductAttachmentSpec(
+        if spec.context is not None:
+            if spec.context.type == ContextType.PRODUCT:
+                for ids in spec.context.related_id:
+                    product = ProductAttachmentSpec(
+                        image_url="https://marketplace-static.gudangada.com/email-assets/logo.png",
+                        is_available=True,
+                        current_stock=100,
+                        price="Rp 25,000",
+                        name="Product #" + str(ids),
+                        id=ids
+                    )
+
+                    product_attachments.append(product)
+
+            # get order attachment
+            if spec.context.type == ContextType.ORDER:
+                if len(spec.context.related_id) != 1:
+                    raise HTTPException(detail="context order only can contain 1 order code", status_code=400)
+
+                order_attachments = OrderAttachmentSpec(
                     image_url="https://marketplace-static.gudangada.com/email-assets/logo.png",
-                    is_available=True,
-                    current_stock=100,
                     price="Rp 25,000",
-                    name="Product #" + str(ids),
-                    id=ids
+                    order_code="ORDER-" + str(spec.context.related_id[0]),
+                    status="PENDING"
                 )
 
-                product_attachments.append(product)
-
-        # get order attachment
-        if spec.context.type == ContextType.ORDER:
-            if len(spec.context.related_id) != 1:
-                raise Exception("context order only can contain 1 order code")
-
-            order_attachments = OrderAttachmentSpec(
-                image_url="https://marketplace-static.gudangada.com/email-assets/logo.png",
-                price="Rp 25,000",
-                order_code="ORDER-" + str(spec.context.related_id[0]),
-                status="PENDING"
-            )
+        reply_option = []
+        for node in next_path.nodes:
+            reply_option.append(ReplyOptionSpec(
+                message=node.text,
+                message_code=node.code
+            ))
 
         # get chat meta
         chat_meta = ChatMetaSpec(
             sender=user.username,
             getstream_id=user.getstream_id,
-            need_reply=False,
-            reply_option=None,
+            need_reply=True,
+            reply_option=reply_option,
             channel_id=channel.id,
+            current_path=current_path
         )
 
         chat_spec = ChatSpec(
-            message=spec.message,
+            message=current_node.text,
             chat_meta=chat_meta,
             order_attachment=order_attachments,
             product_attachment=product_attachments

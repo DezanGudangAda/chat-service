@@ -27,8 +27,10 @@ class ContextSpec:
 
 @dataclass
 class SendChatSpec:
-    message: str
-    getstream_id: str
+    message_code: str
+    current_path: str
+    identity: str
+    role: UserType
     channel_id: str
     context: Optional[ContextSpec]
 

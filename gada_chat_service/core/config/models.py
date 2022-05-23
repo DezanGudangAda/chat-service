@@ -23,6 +23,8 @@ class ExternalServiceConfiguration:
 
 @dataclass
 class Configuration:
+    env: str
+    sentry_dsn: str
     database: DatabaseConfiguration
     get_stream: GetStreamConfiguration
     external_service: ExternalServiceConfiguration

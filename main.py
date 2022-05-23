@@ -2,8 +2,6 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from gada_chat_service.chat_service.router.v1.channel_router import channel_router
-from gada_chat_service.chat_service.router.v1.user_router import user_router
 from gada_chat_service.chat_service.router.v1.v1 import v1_router
 
 app = FastAPI()

@@ -72,7 +72,7 @@ class QnaJourneyService:
 
         return related_question.question
 
-    def _get_next_node_orchestrator(self, node: str) -> Optional[NodeResult]:
+    def get_node_detail(self, node: str) -> Optional[NodeResult]:
         node_type = self._check_node_type(node)
         text = ""
 
@@ -114,7 +114,7 @@ class QnaJourneyService:
         for node in trimmed_nodes:
             split_node = node.split("/", 1)
             if checker.get(split_node[0]) is not True:
-                get_detail_node = self._get_next_node_orchestrator(split_node[0])
+                get_detail_node = self.get_node_detail(split_node[0])
                 result.append(get_detail_node)
                 checker[split_node[0]] = True
 

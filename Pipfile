@@ -16,6 +16,8 @@ uvicorn = "*"
 fastapi = "*"
 dacite = "*"
 psycopg2-binary = "*"
+sentry-sdk = "*"
+pydantic = "*"
 
 [dev-packages]
 

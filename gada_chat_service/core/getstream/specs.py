@@ -57,12 +57,19 @@ class OrderAttachmentSpec:
 
 
 @dataclass
+class ReplyOptionSpec:
+    message: str
+    message_code: str
+
+
+@dataclass
 class ChatMetaSpec:
     sender: str
     getstream_id: str
     need_reply: bool
     channel_id: str
-    reply_option: Optional[List[str]]
+    reply_option: Optional[List[ReplyOptionSpec]]
+    current_path: str
 
 
 @dataclass
