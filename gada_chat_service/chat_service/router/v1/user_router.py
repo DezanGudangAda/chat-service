@@ -1,12 +1,12 @@
-from typing import Optional, List, Union
+from typing import List, Union
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 
 from gada_chat_service.chat_service.injector import injector
-from gada_chat_service.core.config.services.configuration_service import ConfigurationService
 from gada_chat_service.core.getstream.constant import UserType, ContextType
 from gada_chat_service.core.user.services.user_services import UserService
-from gada_chat_service.core.user.specs import GetUserTokenSpec, SendChatSpec, GetUnreadChatSpec, ContextSpec
+from gada_chat_service.core.user.specs import SendChatSpec, GetUnreadChatSpec, ContextSpec
 
 user_service: UserService = injector.get(
     UserService
@@ -68,13 +68,4 @@ async def get_unread_chat(username: str, role: UserType):
     return {
         "data": res,
         "message": "succeed"
-    }
-
-
-@user_router.get("/tes", tags=["User"])
-async def get_router():
-    confg = ConfigurationService()
-
-    return {
-        "data": confg.get_dsn()
     }
