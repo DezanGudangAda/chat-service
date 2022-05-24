@@ -28,9 +28,10 @@ class ChannelAccessor(IChannelAccessor):
     def create_channel(self, spec: InsertChannelSpec) -> Optional[ChannelDomain]:
         new_channel = Channel()
         new_channel.id = spec.channel_id
-        new_channel.channel_name = spec.channel_name
         new_channel.buyer_getstream_id = spec.buyer_getstream_id
         new_channel.seller_getstream_id = spec.seller_getstream_id
+        new_channel.buyer_name = spec.buyer_name
+        new_channel.seller_name = spec.seller_name
 
         self._session.add(new_channel)
         self._session.commit()
@@ -53,6 +54,28 @@ class ChannelAccessor(IChannelAccessor):
 
         if chan is None:
             return None
+
+        res = []
+        for c in chan:
+            res.append(c.to_domain())
+
+        return res
+
+    def get_channel_with_seller_name(self, seller_name: str) -> Optional[List[ChannelDomain]]:
+        search_format = "%{}%".format(seller_name)
+        chan = self._query. \
+            filter(Channel.seller_name.like(search_format)).all()
+
+        res = []
+        for c in chan:
+            res.append(c.to_domain())
+
+        return res
+
+    def get_channel_with_buyer_name(self, buyer_name: str) -> Optional[List[ChannelDomain]]:
+        search_format = "%{}%".format(buyer_name)
+        chan = self._query. \
+            filter(Channel.buyer_name.like(search_format)).all()
 
         res = []
         for c in chan:

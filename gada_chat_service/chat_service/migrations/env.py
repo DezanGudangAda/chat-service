@@ -23,7 +23,7 @@ from gada_chat_service.core.config.services.configuration_service import Configu
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-
+os.environ["env"] = "MIGRATIONS"
 config.set_main_option("sqlalchemy.url", ConfigurationService.get_env_dsn())
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

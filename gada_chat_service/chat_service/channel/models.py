@@ -11,7 +11,8 @@ class Channel(Base):
 
     buyer_getstream_id = Column(String)
     seller_getstream_id = Column(String)
-    channel_name = Column(String, index=True)
+    buyer_name = Column(String, index=True)
+    seller_name = Column(String, index=True)
 
     def to_domain(self) -> ChannelDomain:
         domain = ObjectMapperUtil.map(self, ChannelDomain)

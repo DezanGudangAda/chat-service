@@ -21,3 +21,11 @@ class IChannelAccessor(ABC):
     @abstractmethod
     def get_channel_by_user(self, getstream_id: str) -> Optional[List[ChannelDomain]]:
         raise NotImplementedError
+
+    @abstractmethod
+    def get_channel_with_seller_name(self, seller_name: str) -> Optional[List[ChannelDomain]]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_channel_with_buyer_name(self, buyer_name: str) -> Optional[List[ChannelDomain]]:
+        raise NotImplementedError

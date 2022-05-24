@@ -42,7 +42,6 @@ class ChannelService:
 
         new_channel = self.channel_accessor.create_channel(InsertChannelSpec(
             channel_id=create_channel.channel_id,
-            channel_name=spec.channel_name,
             seller_getstream_id=spec.seller_getstream_id,
             buyer_getstream_id=spec.buyer_getstream_id,
             buyer_name=spec.buyer_name,
@@ -89,7 +88,6 @@ class ChannelService:
             seller_getstream_id=seller_chat_account.getstream_id,
             buyer_getstream_id=buyer_chat_account.getstream_id,
             channel_id=stream_channel.channel_id,
-            channel_name=stream_channel.channel_name,
             seller_name=seller_chat_account.name,
             buyer_name=buyer_chat_account.name
         ))
@@ -188,8 +186,39 @@ class ChannelService:
                 unread_chat=unread_message,
                 date=last_message_at
             ))
+        result_sender = []
+        channel_from_db = []
+
+        if spec.role == UserType.SELLER:
+            channel_from_db = self.channel_accessor.get_channel_with_buyer_name(spec.keyword)
+        elif spec.role == UserType.BUYER:
+            channel_from_db = self.channel_accessor.get_channel_with_seller_name(spec.keyword)
+
+        for channel in channel_from_db:
+            channel_id = f"messaging:{channel.id}"
+            get_channel_detail = self.stream_service.get_channel(channel_id=channel_id)[0]
+            messages = get_channel_detail.get("messages")
+            if len(messages) == 0:
+                continue
+
+            read = get_channel_detail.get("read")
+            unread_message = read[index].get("unread_messages")
+            last_message_at = messages[0].get("created_at")
+            last_message = messages[0].get("text")
+            channel_id = get_channel_detail.get("channel").get("id")
+            sender = get_channel_detail.get("channel").get(key_name)
+            if sender is None:
+                sender = "No Name"
+
+            result_sender.append(ChannelRoomReturn(
+                channel_id=channel_id,
+                name=sender,
+                last_chat=last_message,
+                unread_chat=unread_message,
+                date=last_message_at
+            ))
 
         return SearchChannelReturn(
             in_chat=in_message,
-            sender=[]
+            sender=result_sender
         )
