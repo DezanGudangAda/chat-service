@@ -140,6 +140,56 @@ class ChannelService:
             chat_rooms=result,
         )
 
-
     def search_channel(self, spec: SearchChannelSpec) -> Optional[SearchChannelReturn]:
-        return None
+        role = UserType.BUYER
+        index = BUYER_INDEX
+        key_name = BUYER_NAME_STREAM_KEY
+
+        if role == UserType.SELLER:
+            role = UserType.SELLER
+            index = SELLER_INDEX
+            key_name = SELLER_NAME_STREAM_KEY
+
+        user = self.user_service.get_user_detail(spec.identity, role)
+        if user is None:
+            raise HTTPException(status_code=400, detail="user not valid")
+
+        channels = self.stream_service.deep_search_message_in_channel(user.getstream_id, spec.keyword)
+
+        in_message = []
+        previous_channel_id = ""
+        for channel in channels:
+            message = channel["message"]
+            channel_data = message["channel"]
+            channel_cid = channel_data["cid"]
+
+            if previous_channel_id == "":
+                previous_channel_id = channel_cid
+            elif previous_channel_id == channel_cid:
+                continue
+
+            get_channel_detail = self.stream_service.get_channel(channel_id=channel_cid)[0]
+
+            read = get_channel_detail.get("read")
+            messages = get_channel_detail.get("messages")
+
+            unread_message = read[index].get("unread_messages")
+            last_message_at = messages[0].get("created_at")
+            last_message = messages[0].get("text")
+            channel_id = channel_data.get("id")
+            sender = get_channel_detail.get("channel").get(key_name)
+            if sender is None:
+                sender = "No Name"
+
+            in_message.append(ChannelRoomReturn(
+                channel_id=channel_id,
+                name=sender,
+                last_chat=last_message,
+                unread_chat=unread_message,
+                date=last_message_at
+            ))
+
+        return SearchChannelReturn(
+            in_chat=in_message,
+            sender=[]
+        )

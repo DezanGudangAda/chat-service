@@ -29,7 +29,6 @@ class GetStreamService:
 
     def create_channel(self, spec: CreateChannelSpec) -> Optional[CreateChannelResult]:
         # TODO: Config created by id
-        print(spec.seller_name, spec.buyer_name)
         channel = Channel(self.stream, "messaging", None,
                           custom_data=dict(members=[spec.seller_getstream_id, spec.buyer_getstream_id],
                                            created_by_id="4645",
@@ -85,3 +84,39 @@ class GetStreamService:
             message_limit=1,
         )
         return data
+
+    def deep_search_message_in_channel(self, getstream_id: str, keyword):
+        filters = {
+            "members": {
+                "$in": [getstream_id]
+            }
+        }
+
+        result = self.stream.search(
+            filters,
+            keyword,
+            limit=100
+        )
+
+        return result.get("results")
+
+    def get_channel(self, channel_id: str):
+        filters = {
+            "cid": {
+                "$eq": channel_id
+            }
+        }
+
+        result = self.stream.query_channels(filters, message_limit=1)
+        return result.get("channels")
+
+    def query_channel_based_sender_name(self, sender_name: str):
+        filters = {
+            "seller_name": {
+                "autocomplete": sender_name
+            }
+        }
+
+        result = self.stream.query_channels(filters, message_limit=1)
+
+        return result
