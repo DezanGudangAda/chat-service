@@ -4,7 +4,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from gada_chat_service.chat_service.router.v1.v1 import v1_router
 
-app = FastAPI()
+app = FastAPI(
+    title="Gudang Ada Chat Service",
+    description="Gudang Ada template based chat service",
+    version="v1.0.0",
+    contact={
+        "name": "Dezan Andhika",
+        "email": "dezan.andhika@gudangada.com"
+    }
+)
 
 origins = [
     "http://localhost",
